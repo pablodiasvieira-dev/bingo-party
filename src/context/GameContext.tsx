@@ -1,6 +1,6 @@
 // src/context/GameContext.tsx
 import React, { createContext, useState, useContext, type ReactNode, useCallback, useEffect, useRef } from 'react';
-import type { GameState, GameAction, BingoCardData, User } from '../types';
+import type { GameState, BingoCardData, User } from '../types';
 
 // --- Configuração do Backend ---
 const API_URL = 'https://bingo-party-backend.onrender.com';
@@ -8,6 +8,10 @@ const WS_URL = 'wss://bingo-party-backend.onrender.com';
 // const API_URL = 'http://localhost:8080';
 // const WS_URL = 'ws://localhost:8080';
 // ------------------------------
+type WebSocketAction =
+    | { type: 'DRAW_NUMBER' }
+    | { type: 'CLAIM_CARD'; payload: { cardId: number; playerName: string } }
+    | { type: 'RESET_GAME' };
 
 const BINGO_USER_KEY = 'bingoUser';
 
@@ -28,7 +32,7 @@ const GameContext = createContext<{
     state: GameState;
     user: User | null;
     isConnected: boolean; // Novo: para saber se o WS está conectado
-    dispatch: (action: Omit<GameAction, 'type'> & { type: 'DRAW_NUMBER' | 'CLAIM_CARD' | 'RESET_GAME' }) => void; // Ação 'SETUP_GAME' removida
+    dispatch: (action: WebSocketAction) => void;
     createGame: (payload: { cardSize: number; numCards: number }) => Promise<GameState>; // Nova: para a API
     login: (user: User) => void;
     logout: () => void;
@@ -113,7 +117,7 @@ export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: strin
      * Envia ações para o servidor WebSocket.
      * Note: 'SETUP_GAME' não é mais uma ação de dispatch, é uma chamada de API.
      */
-    const dispatch = (action: Omit<GameAction, 'type'> & { type: 'DRAW_NUMBER' | 'CLAIM_CARD' | 'RESET_GAME' }) => {
+    const dispatch = (action: WebSocketAction) => {
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             wsRef.current.send(JSON.stringify(action));
         } else {
