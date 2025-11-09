@@ -125,8 +125,8 @@ const BingoCage: React.FC = () => {
             </div>
             <p className="text-sm text-slate-400 mb-4">{availableNumbers.length} bolas restantes</p>
             <div className="relative w-32 h-32 md:w-40 md:h-40 bg-slate-900 rounded-full flex items-center justify-center my-4 shadow-inner">
-                 <div className="absolute w-full h-full border-4 border-slate-700 rounded-full animate-spin [animation-duration:10s]"></div>
-                 <div className="absolute w-full h-full border-4 border-dashed border-slate-600 rounded-full animate-spin [animation-duration:15s] [animation-direction:reverse]"></div>
+                <div className="absolute w-full h-full border-4 border-slate-700 rounded-full animate-spin [animation-duration:10s]"></div>
+                <div className="absolute w-full h-full border-4 border-dashed border-slate-600 rounded-full animate-spin [animation-duration:15s] [animation-direction:reverse]"></div>
                 {lastDrawnNumber ? (
                     <span className="text-6xl md:text-7xl font-display text-yellow-300 z-10">{lastDrawnNumber}</span>
                 ) : (
@@ -149,7 +149,7 @@ const NumbersPanel: React.FC = () => {
     const { drawnNumbers, cardSize } = state;
     const drawnSet = new Set(drawnNumbers);
 
-    const headers = ['B', 'I', 'N', 'G', 'O', '...'].slice(0, cardSize); 
+    const headers = ['B', 'I', 'N', 'G', 'O', '...'].slice(0, cardSize);
     const numbersPerColumn = 15;
     const maxNumber = cardSize * numbersPerColumn;
 
@@ -177,13 +177,12 @@ const NumbersPanel: React.FC = () => {
                                 {columnNumbers.map(num => {
                                     const isDrawn = drawnSet.has(num);
                                     return (
-                                        <div 
-                                            key={num} 
-                                            className={`flex items-center justify-center w-full aspect-square text-sm font-bold rounded-full transition-colors duration-300 ${
-                                                isDrawn 
-                                                ? 'bg-yellow-500 text-slate-900 shadow-sm shadow-yellow-400/50' 
-                                                : 'bg-slate-700 text-slate-400'
-                                            }`}
+                                        <div
+                                            key={num}
+                                            className={`flex items-center justify-center w-full aspect-square text-sm font-bold rounded-full transition-colors duration-300 ${isDrawn
+                                                    ? 'bg-yellow-500 text-slate-900 shadow-sm shadow-yellow-400/50'
+                                                    : 'bg-slate-700 text-slate-400'
+                                                }`}
                                         >
                                             {num}
                                         </div>
@@ -200,7 +199,7 @@ const NumbersPanel: React.FC = () => {
     // Layout para telas maiores: BINGO como linhas horizontais
     const DesktopLayout = () => {
         return (
-             <div className="inline-flex flex-col gap-3">
+            <div className="inline-flex flex-col gap-3">
                 {headers.map((letter, colIndex) => {
                     const min = colIndex * numbersPerColumn + 1;
                     const max = (colIndex + 1) * numbersPerColumn;
@@ -215,13 +214,12 @@ const NumbersPanel: React.FC = () => {
                                 {columnNumbers.map(num => {
                                     const isDrawn = drawnSet.has(num);
                                     return (
-                                        <div 
-                                            key={num} 
-                                            className={`flex items-center justify-center w-10 h-10 text-base font-bold rounded-full transition-colors duration-300 ${
-                                                isDrawn 
-                                                ? 'bg-yellow-500 text-slate-900 shadow-md shadow-yellow-400/50' 
-                                                : 'bg-slate-700 text-slate-400'
-                                            }`}
+                                        <div
+                                            key={num}
+                                            className={`flex items-center justify-center w-10 h-10 text-base font-bold rounded-full transition-colors duration-300 ${isDrawn
+                                                    ? 'bg-yellow-500 text-slate-900 shadow-md shadow-yellow-400/50'
+                                                    : 'bg-slate-700 text-slate-400'
+                                                }`}
                                         >
                                             {num}
                                         </div>
@@ -238,11 +236,11 @@ const NumbersPanel: React.FC = () => {
     return (
         <div className="p-4 bg-slate-800/50 rounded-xl shadow-lg border border-slate-700">
             <h3 className="text-lg font-bold text-purple-300 mb-3 text-center">Painel de Números ({drawnNumbers.length}/{maxNumber})</h3>
-            
+
             <div className="md:hidden">
                 <MobileLayout />
             </div>
-            
+
             <div className="hidden md:flex md:justify-center">
                 <DesktopLayout />
             </div>
@@ -263,7 +261,7 @@ const GameStatusTabs: React.FC = () => {
     };
 
     const sortedWinners = [...winners].sort(winnerSortLogic);
-    
+
     const winnersThisRound = winners
         .filter(w => w.round === drawnNumbers.length && drawnNumbers.length > 0)
         .sort(winnerSortLogic);
@@ -308,7 +306,7 @@ const GameStatusTabs: React.FC = () => {
 
             <div className="space-y-2 max-h-60 overflow-y-auto pr-2">
                 {activeTab === 'winners' && (
-                    sortedWinners.length === 0 
+                    sortedWinners.length === 0
                         ? <p className="text-center text-sm text-slate-400">Nenhum vencedor ainda...</p>
                         : sortedWinners.map(renderWinnerCard)
                 )}
@@ -339,7 +337,7 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="space-y-6">
-             <div className="text-center mb-6">
+            <div className="text-center mb-6">
                 <h1 className="text-3xl font-bold">Painel do Administrador</h1>
                 <p className="text-slate-400">Bem-vindo, {user?.name}! Gerencie seu jogo abaixo.</p>
             </div>
@@ -349,18 +347,18 @@ const AdminDashboard: React.FC = () => {
                     <GameStatusTabs />
                 </div>
                 <div className="lg:col-span-2 space-y-6">
-                    <NumbersPanel/>
+                    <NumbersPanel />
                     <div className="p-4 bg-slate-800/50 rounded-xl shadow-lg border border-slate-700">
-                         <h3 className="flex items-center justify-center gap-2 text-lg font-bold text-purple-300 mb-3"><UsersIcon className="w-5 h-5"/> Cartelas dos Jogadores ({allCards.length})</h3>
+                        <h3 className="flex items-center justify-center gap-2 text-lg font-bold text-purple-300 mb-3"><UsersIcon className="w-5 h-5" /> Cartelas dos Jogadores ({allCards.length})</h3>
                         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                             {allCards.map(card => <PlayerCardLink key={card.id} card={card} />)}
                         </div>
                     </div>
                 </div>
             </div>
-             <div className="text-center mt-6">
+            <div className="text-center mt-6">
                 <button
-                    onClick={() => {if(window.confirm('Você tem certeza que deseja reiniciar o jogo?')) dispatch({type: 'RESET_GAME'})}}
+                    onClick={() => { if (window.confirm('Você tem certeza que deseja reiniciar o jogo?')) dispatch({ type: 'RESET_GAME' }) }}
                     className="inline-flex items-center gap-2 px-6 py-2 bg-red-600 text-white font-semibold text-sm rounded-lg hover:bg-red-700 transition-colors"
                 >
                     <RefreshCwIcon className="w-4 h-4" />

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
-import type { BingoCardData, BingoNumber } from '../types';
+import type { BingoCardData } from '../types';
 import { CheckCircleIcon, TrophyIcon, TicketIcon } from '../components/icons';
 import { useGame } from '@/context/GameContext';
 
