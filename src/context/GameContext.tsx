@@ -3,8 +3,8 @@ import React, { createContext, useState, useContext, type ReactNode, useCallback
 import type { GameState, GameAction, BingoCardData, User } from '../types';
 
 // --- Configuração do Backend ---
-const API_URL = 'https://bingo-party-backend.onrender.com/';
-const WS_URL = 'wss://bingo-party-backend.onrender.com/';
+const API_URL = 'https://bingo-party-backend.onrender.com';
+const WS_URL = 'wss://bingo-party-backend.onrender.com';
 // const API_URL = 'http://localhost:8080';
 // const WS_URL = 'ws://localhost:8080';
 // ------------------------------
