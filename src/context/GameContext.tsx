@@ -66,6 +66,10 @@ export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: strin
         // Se não houver gameId na URL, não faz nada.
         if (!gameIdFromUrl) {
             setState(initialState); // Reseta o estado se sairmos de uma sala
+            if (wsRef.current) {
+                wsRef.current.close();
+                wsRef.current = null;
+            }
             return;
         }
 
@@ -106,8 +110,10 @@ export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: strin
 
         // Função de limpeza: fecha o WebSocket quando o componente desmonta
         return () => {
-            console.log('[WS] Fechando conexão.');
-            ws.close();
+            if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+                console.log('[WS] Fechando conexão.');
+                ws.close();
+            }
             wsRef.current = null;
             setIsConnected(false);
         };
