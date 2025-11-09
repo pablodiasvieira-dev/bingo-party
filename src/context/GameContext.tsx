@@ -3,8 +3,10 @@ import React, { createContext, useState, useContext, type ReactNode, useCallback
 import type { GameState, GameAction, BingoCardData, User } from '../types';
 
 // --- Configuração do Backend ---
-const API_URL = 'http://localhost:8080';
-const WS_URL = 'ws://localhost:8080';
+const API_URL = 'https://bingo-party-backend.onrender.com/';
+const WS_URL = 'wss://bingo-party-backend.onrender.com/';
+// const API_URL = 'http://localhost:8080';
+// const WS_URL = 'ws://localhost:8080';
 // ------------------------------
 
 const BINGO_USER_KEY = 'bingoUser';
@@ -67,12 +69,12 @@ export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: strin
         if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
             // Se o gameId mudou, fecha a conexão antiga
             if (!wsRef.current.url.endsWith(gameIdFromUrl)) {
-                 wsRef.current.close();
+                wsRef.current.close();
             } else {
                 return; // Já conectado à sala correta
             }
         }
-        
+
         console.log(`[WS] Conectando à sala: ${gameIdFromUrl}...`);
         const ws = new WebSocket(`${WS_URL}/ws/${gameIdFromUrl}`);
         wsRef.current = ws;
@@ -135,18 +137,18 @@ export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: strin
                 throw new Error(err.error || 'Falha ao criar o jogo');
             }
             const newGameState: GameState = await response.json();
-            
+
             // Não precisamos definir o estado aqui,
             // o redirecionamento fará o useEffect conectar-se ao WS
             // e o WS enviará o estado.
-            
+
             return newGameState;
         } catch (error) {
             console.error('Erro ao criar o jogo:', error);
             throw error;
         }
     };
-    
+
     const login = (userData: User) => {
         localStorage.setItem(BINGO_USER_KEY, JSON.stringify(userData));
         setUser(userData);
@@ -162,16 +164,16 @@ export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: strin
     }, [state.allCards]);
 
     return (
-        <GameContext.Provider 
-            value={{ 
-                state, 
-                user, 
-                isConnected, 
-                dispatch, 
-                createGame, 
-                login, 
-                logout, 
-                getCardById 
+        <GameContext.Provider
+            value={{
+                state,
+                user,
+                isConnected,
+                dispatch,
+                createGame,
+                login,
+                logout,
+                getCardById
             }}
         >
             {children}
