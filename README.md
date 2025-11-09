@@ -1,73 +1,61 @@
-# React + TypeScript + Vite
+# Bingo Party Manager  bingo_party
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bem-vindo ao **Bingo Party Manager**! Um aplicativo web moderno e interativo para criar e gerenciar jogos de bingo de forma fácil e divertida. Perfeito para festas, encontros familiares ou eventos com amigos.
 
-Currently, two official plugins are available:
+Este aplicativo foi projetado com uma abordagem "mobile-first", garantindo uma experiência perfeita em qualquer dispositivo. O administrador do jogo tem um painel de controle completo, enquanto os jogadores podem entrar na partida com um simples link, sem a necessidade de downloads ou instalações.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Funcionalidades Principais
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Painel do Administrador
+- **Criação de Jogos Personalizada:** Configure o tamanho das cartelas (5x5, etc.) e o número de cartelas a serem geradas.
+- **Globo de Bingo Virtual:** Sorteie números um a um com um clique. O globo mostra o último número sorteado e quantas bolas ainda restam.
+- **Painel de Números Completo:** Visualize todos os números do jogo, organizados por colunas (B-I-N-G-O), com os números já sorteados claramente destacados.
+- **Gerenciamento de Jogadores:** Gere e compartilhe links exclusivos para cada cartela. Acompanhe quais cartelas já foram adquiridas pelos jogadores.
+- **Monitoramento de Vencedores:** Um sistema de abas exibe os vencedores do jogo (Bingo e Quinas), os vencedores da rodada atual e uma visão geral estratégica de quais jogadores estão mais perto de ganhar.
+- **Responsividade:** O layout se adapta de forma inteligente para oferecer a melhor visualização tanto em telas grandes quanto em dispositivos móveis.
 
-## Expanding the ESLint configuration
+### Página do Jogador
+- **Acesso Fácil:** Jogadores entram no jogo através de um link exclusivo, sem necessidade de cadastro.
+- **Aquisição de Cartela:** Antes de ver os números, o jogador "adquire" a cartela inserindo seu nome, aumentando o suspense.
+- **Marcação Automática:** Os números sorteados são marcados automaticamente na cartela do jogador em tempo real.
+- **Alertas de Vitória:** Pop-ups comemorativos e animados aparecem quando um jogador faz uma "Quina" (linha completa) ou "Bingo".
+- **Estatísticas em Tempo Real:** O jogador pode acompanhar quantas pedras faltam para completar a cartela e um detalhamento das "Quinas" já feitas (horizontal, vertical e diagonal).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 📸 Screenshots do Jogo
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Adicione aqui as imagens do seu aplicativo para demonstrar suas funcionalidades.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+### **Painel do Administrador (Desktop)**
+*(Substitua este texto pela sua imagem. Ex: ![Painel do Administrador](/src//assets/admin-em-jogo-desk.png))*
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+<br/>
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### **Página do Jogador com Cartela**
+*(Substitua este texto pela sua imagem. Ex: ![Cartela do Jogador](/src/assets/cartela-jogo-desk.png))*
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+<br/>
+
+### **Alerta de "Bingo!"**
+*(Substitua este texto pela sua imagem. Ex: ![Alerta de Bingo](./src/assets/admin-bingo-desk.png))*
+
+### **Alerta de "Bingo - Mobile!"**
+*(Substitua este texto pela sua imagem. Ex: ![Alerta de Bingo](./src/assets/cartela-bingo-mobi.png))*
+
+<br/>
+
+### **Visualização em Dispositivo Móvel**
+*(Substitua este texto pela sua imagem. Ex: ![Visualização Móvel](./src/assets/admin-bingo-mobi.png))*
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Frontend:** React com TypeScript
+- **Estilização:** Tailwind CSS para um design rápido, moderno e responsivo.
+- **Estado do Jogo:** A aplicação simula um backend em tempo real utilizando o `localStorage` do navegador para persistir o estado do jogo, permitindo que a sessão seja retomada mesmo que a página seja recarregada.
+
+Este projeto foi construído para ser autocontido e funcionar diretamente no navegador, sem a necessidade de um backend complexo ou banco de dados.
