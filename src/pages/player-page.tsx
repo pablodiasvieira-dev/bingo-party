@@ -139,7 +139,7 @@ const PlayerPage: React.FC<{ cardId: string }> = ({ cardId }) => {
     const handleClaimCard = () => {
         if (playerName.trim()) {
             dispatch({ type: 'CLAIM_CARD', 
-                // payload: { cardId: cardIdNum, playerName: playerName.trim() } 
+                payload: { cardId: cardIdNum, playerName: playerName.trim() } 
             });
         } else {
             alert('Por favor, digite seu nome.');
