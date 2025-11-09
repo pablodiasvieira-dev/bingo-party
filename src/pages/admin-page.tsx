@@ -32,19 +32,37 @@ const LoginPage: React.FC = () => {
     );
 };
 
-
 const GameSetup: React.FC = () => {
-    const { dispatch } = useGame();
+    // 1. Trocamos 'dispatch' por 'createGame'
+    const { createGame } = useGame();
     const [cardSize, setCardSize] = useState(5);
     const [numCards, setNumCards] = useState(10);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    // 2. O handleSubmit agora é assíncrono e chama a API
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch({ type: 'SETUP_GAME', payload: { cardSize, numCards } });
+        setIsLoading(true);
+        setError(null);
+        try {
+            // 3. Chama a API
+            const newGame = await createGame({ cardSize, numCards });
+
+            // 4. Em vez de dispatch, redireciona para a nova sala de jogo
+            if (newGame && newGame.gameId) {
+                window.location.hash = `#/manage/${newGame.gameId}`;
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Ocorreu um erro.');
+            setIsLoading(false);
+        }
+        // Não definimos setIsLoading(false) em caso de sucesso, 
+        // pois a página será recarregada.
     };
 
     return (
-        <div className="bg-slate-800/50 p-6 rounded-2xl shadow-lg border border-slate-700">
+        <div className="bg-slate-800/50 p-6 rounded-2xl shadow-lg border border-slate-700 max-w-lg mx-auto">
             <h2 className="text-2xl font-bold mb-4 text-center text-purple-300">Novo Jogo de Bingo</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -53,11 +71,12 @@ const GameSetup: React.FC = () => {
                         id="cardSize"
                         value={cardSize}
                         onChange={(e) => setCardSize(Number(e.target.value))}
-                        className="mt-1 block w-full bg-slate-700 border-slate-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                        disabled={isLoading}
+                        className="mt-1 block w-full bg-slate-700 border-slate-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50"
                     >
-                        <option value="4">4x4</option>
+                        {/* <option value="4">4x4</option> // Removido pois o backend só aceita 3 ou 5 */}
+                        <option value="3">3x3</option>
                         <option value="5">5x5 (Padrão)</option>
-                        <option value="6">6x6</option>
                     </select>
                 </div>
                 <div>
@@ -68,15 +87,22 @@ const GameSetup: React.FC = () => {
                         value={numCards}
                         onChange={(e) => setNumCards(Math.max(1, Number(e.target.value)))}
                         min="1"
-                        max="200"
-                        className="mt-1 block w-full bg-slate-700 border-slate-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                        max="1000" // Limite do backend
+                        disabled={isLoading}
+                        className="mt-1 block w-full bg-slate-700 border-slate-600 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50"
                     />
                 </div>
+
+                {error && (
+                    <p className="text-sm text-red-400 text-center">{error}</p>
+                )}
+
                 <button
                     type="submit"
-                    className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-transform transform hover:scale-105 shadow-md shadow-purple-500/30"
+                    disabled={isLoading}
+                    className="w-full bg-purple-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-purple-700 transition-transform transform hover:scale-105 shadow-md shadow-purple-500/30 disabled:bg-slate-600 disabled:shadow-none disabled:cursor-not-allowed disabled:transform-none"
                 >
-                    Iniciar Jogo
+                    {isLoading ? 'Criando Jogo...' : 'Iniciar Jogo'}
                 </button>
             </form>
         </div>
@@ -180,8 +206,8 @@ const NumbersPanel: React.FC = () => {
                                         <div
                                             key={num}
                                             className={`flex items-center justify-center w-full aspect-square text-sm font-bold rounded-full transition-colors duration-300 ${isDrawn
-                                                    ? 'bg-yellow-500 text-slate-900 shadow-sm shadow-yellow-400/50'
-                                                    : 'bg-slate-700 text-slate-400'
+                                                ? 'bg-yellow-500 text-slate-900 shadow-sm shadow-yellow-400/50'
+                                                : 'bg-slate-700 text-slate-400'
                                                 }`}
                                         >
                                             {num}
@@ -217,8 +243,8 @@ const NumbersPanel: React.FC = () => {
                                         <div
                                             key={num}
                                             className={`flex items-center justify-center w-10 h-10 text-base font-bold rounded-full transition-colors duration-300 ${isDrawn
-                                                    ? 'bg-yellow-500 text-slate-900 shadow-md shadow-yellow-400/50'
-                                                    : 'bg-slate-700 text-slate-400'
+                                                ? 'bg-yellow-500 text-slate-900 shadow-md shadow-yellow-400/50'
+                                                : 'bg-slate-700 text-slate-400'
                                                 }`}
                                         >
                                             {num}
@@ -372,26 +398,26 @@ const AdminDashboard: React.FC = () => {
 const AdminPage: React.FC = () => {
     const { state, user } = useGame();
 
-    useEffect(() => {
-        const currentHash = window.location.hash;
+    // useEffect(() => {
+    //     const currentHash = window.location.hash;
 
-        // Este efeito só deve gerenciar rotas de administração para evitar redirecionamentos indesejados.
-        if (!currentHash.startsWith('#/manage')) {
-            return;
-        }
+    //     // Este efeito só deve gerenciar rotas de administração para evitar redirecionamentos indesejados.
+    //     if (!currentHash.startsWith('#/manage')) {
+    //         return;
+    //     }
 
-        // Redireciona para a URL do jogo com ID se um jogo estiver ativo e a URL não corresponder.
-        if (state.isGameStarted && state.gameId) {
-            const expectedHash = `#/manage/${state.gameId}`;
-            if (currentHash !== expectedHash) {
-                window.location.hash = expectedHash;
-            }
-        }
-        // Redireciona para a página de setup se o jogo for resetado e ainda estivermos em uma URL de jogo.
-        else if (!state.isGameStarted && currentHash.startsWith('#/manage/')) {
-            window.location.hash = '#/manage';
-        }
-    }, [state.isGameStarted, state.gameId]);
+    //     // Redireciona para a URL do jogo com ID se um jogo estiver ativo e a URL não corresponder.
+    //     if (state.isGameStarted && state.gameId) {
+    //         const expectedHash = `#/manage/${state.gameId}`;
+    //         if (currentHash !== expectedHash) {
+    //             window.location.hash = expectedHash;
+    //         }
+    //     }
+    //     // Redireciona para a página de setup se o jogo for resetado e ainda estivermos em uma URL de jogo.
+    //     else if (!state.isGameStarted && currentHash.startsWith('#/manage/')) {
+    //         window.location.hash = '#/manage';
+    //     }
+    // }, [state.isGameStarted, state.gameId]);
 
     if (!user) {
         return <LoginPage />;
@@ -399,7 +425,12 @@ const AdminPage: React.FC = () => {
 
     return (
         <div>
-            {state.isGameStarted ? <AdminDashboard /> : <GameSetup />}
+            {/* Mude esta linha! 
+              Verifique por 'state.gameId' em vez de 'state.isGameStarted'.
+              Isso mostrará o painel assim que o jogo for criado, 
+              antes mesmo do primeiro número ser sorteado.
+            */}
+            {state.gameId ? <AdminDashboard /> : <GameSetup />}
         </div>
     );
 };

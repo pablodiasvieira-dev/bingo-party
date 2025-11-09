@@ -1,37 +1,52 @@
-import React, { createContext, useState, useContext, type ReactNode, useCallback, useEffect } from 'react';
+// src/context/GameContext.tsx
+import React, { createContext, useState, useContext, type ReactNode, useCallback, useEffect, useRef } from 'react';
 import type { GameState, GameAction, BingoCardData, User } from '../types';
-import { mockWebSocketServer } from '../services/mockWebSocket';
+
+// --- Configuração do Backend ---
+const API_URL = 'http://localhost:8080';
+const WS_URL = 'ws://localhost:8080';
+// ------------------------------
 
 const BINGO_USER_KEY = 'bingoUser';
+
+// Estado inicial vazio, será preenchido pelo WebSocket
+const initialState: GameState = {
+    gameId: null,
+    isGameStarted: false,
+    isGameFinished: false,
+    cardSize: 5,
+    allCards: [],
+    drawnNumbers: [],
+    availableNumbers: [],
+    winners: [],
+    lastDrawnNumber: null,
+};
 
 const GameContext = createContext<{
     state: GameState;
     user: User | null;
-    dispatch: (action: GameAction) => void;
+    isConnected: boolean; // Novo: para saber se o WS está conectado
+    dispatch: (action: Omit<GameAction, 'type'> & { type: 'DRAW_NUMBER' | 'CLAIM_CARD' | 'RESET_GAME' }) => void; // Ação 'SETUP_GAME' removida
+    createGame: (payload: { cardSize: number; numCards: number }) => Promise<GameState>; // Nova: para a API
     login: (user: User) => void;
     logout: () => void;
     getCardById: (id: number) => BingoCardData | undefined;
 }>({
-    state: {
-        gameId: null,
-        isGameStarted: false,
-        isGameFinished: false,
-        cardSize: 5,
-        allCards: [],
-        drawnNumbers: [],
-        availableNumbers: [],
-        winners: [],
-        lastDrawnNumber: null,
-    },
+    state: initialState,
     user: null,
+    isConnected: false,
     dispatch: () => null,
+    createGame: () => Promise.reject(new Error('GameProvider not mounted')),
     login: () => null,
     logout: () => null,
     getCardById: () => undefined,
 });
 
-export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [state, setState] = useState<GameState>(mockWebSocketServer.getState());
+export const GameProvider: React.FC<{ children: ReactNode; gameIdFromUrl?: string }> = ({ children, gameIdFromUrl }) => {
+    const [state, setState] = useState<GameState>(initialState);
+    const [isConnected, setIsConnected] = useState(false);
+    const wsRef = useRef<WebSocket | null>(null);
+
     const [user, setUser] = useState<User | null>(() => {
         try {
             const storedUser = localStorage.getItem(BINGO_USER_KEY);
@@ -42,13 +57,94 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     });
 
     useEffect(() => {
-        // Inscreve-se no servidor WebSocket simulado para atualizações de estado do jogo
-        const unsubscribe = mockWebSocketServer.subscribe(setState);
-        return () => unsubscribe();
-    }, []);
+        // Se não houver gameId na URL, não faz nada.
+        if (!gameIdFromUrl) {
+            setState(initialState); // Reseta o estado se sairmos de uma sala
+            return;
+        }
 
-    const dispatch = (action: GameAction) => {
-        mockWebSocketServer.dispatch(action);
+        // Evita reconexões múltiplas
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            // Se o gameId mudou, fecha a conexão antiga
+            if (!wsRef.current.url.endsWith(gameIdFromUrl)) {
+                 wsRef.current.close();
+            } else {
+                return; // Já conectado à sala correta
+            }
+        }
+        
+        console.log(`[WS] Conectando à sala: ${gameIdFromUrl}...`);
+        const ws = new WebSocket(`${WS_URL}/ws/${gameIdFromUrl}`);
+        wsRef.current = ws;
+
+        ws.onopen = () => {
+            console.log('[WS] Conectado ao servidor Bingo.');
+            setIsConnected(true);
+        };
+
+        ws.onmessage = (event) => {
+            // O servidor *sempre* envia o GameState completo
+            const newGameState = JSON.parse(event.data);
+            setState(newGameState);
+        };
+
+        ws.onclose = () => {
+            console.log('[WS] Desconectado do servidor Bingo.');
+            setIsConnected(false);
+        };
+
+        ws.onerror = (error) => {
+            console.error('[WS] Erro:', error);
+            setIsConnected(false);
+        };
+
+        // Função de limpeza: fecha o WebSocket quando o componente desmonta
+        return () => {
+            console.log('[WS] Fechando conexão.');
+            ws.close();
+            wsRef.current = null;
+            setIsConnected(false);
+        };
+    }, [gameIdFromUrl]); // Depende do gameId da URL
+
+    /**
+     * Envia ações para o servidor WebSocket.
+     * Note: 'SETUP_GAME' não é mais uma ação de dispatch, é uma chamada de API.
+     */
+    const dispatch = (action: Omit<GameAction, 'type'> & { type: 'DRAW_NUMBER' | 'CLAIM_CARD' | 'RESET_GAME' }) => {
+        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify(action));
+        } else {
+            console.error('[WS] Não conectado. Ação não enviada:', action);
+        }
+    };
+
+    /**
+     * Nova função para criar um jogo via API REST.
+     * Isso substitui a ação 'SETUP_GAME'.
+     */
+    const createGame = async (payload: { cardSize: number; numCards: number }): Promise<GameState> => {
+        try {
+            const response = await fetch(`${API_URL}/api/create-game`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.error || 'Falha ao criar o jogo');
+            }
+            const newGameState: GameState = await response.json();
+            
+            // Não precisamos definir o estado aqui,
+            // o redirecionamento fará o useEffect conectar-se ao WS
+            // e o WS enviará o estado.
+            
+            return newGameState;
+        } catch (error) {
+            console.error('Erro ao criar o jogo:', error);
+            throw error;
+        }
     };
     
     const login = (userData: User) => {
@@ -66,7 +162,18 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, [state.allCards]);
 
     return (
-        <GameContext.Provider value={{ state, user, dispatch, login, logout, getCardById }}>
+        <GameContext.Provider 
+            value={{ 
+                state, 
+                user, 
+                isConnected, 
+                dispatch, 
+                createGame, 
+                login, 
+                logout, 
+                getCardById 
+            }}
+        >
             {children}
         </GameContext.Provider>
     );
