@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TicketIcon, UsersIcon, TrophyIcon, RefreshCwIcon, GoogleIcon } from '../components/icons';
 import type { BingoCardData, Winner } from '../types';
 import { useGame } from '@/context/GameContext';
